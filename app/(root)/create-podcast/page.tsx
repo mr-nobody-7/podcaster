@@ -28,19 +28,34 @@ import { Textarea } from "@/components/ui/textarea";
 import GeneratePodcast from "@/components/GeneratePodcast";
 import GenerateThumbnail from "@/components/GenerateThumbnail";
 import { Loader } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
+import { VoiceType } from "@/types";
 
 const voiceCategories = ["alloy", "shimmer", "nova", "echo", "fable", "onyx"];
 
 const formSchema = z.object({
-  podcastTitle: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+  podcastTitle: z.string().min(2),
   podcastDescription: z.string().min(10),
 });
 
 const CreatePodcast = () => {
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [imageStorageId, setImageStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
+  const [imageUrl, setImageUrl] = useState("");
+
+  const [audioUrl, setAudioUrl] = useState("");
+  const [audioStorageId, setAudioStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
+  const [audioDuration, setAudioDuration] = useState(0);
+
   const [voiceType, setVoiceType] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(true);
+  const [voicePrompt, setVoicePrompt] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,7 +96,7 @@ const CreatePodcast = () => {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-white-1" />
                 </FormItem>
               )}
             />
@@ -93,7 +108,7 @@ const CreatePodcast = () => {
               <Select onValueChange={(voiceType) => setVoiceType(voiceType)}>
                 <SelectTrigger
                   className={cn(
-                    "text-16 w-full border-none bg-black-1 text-gray-1 focus-visible:ring-offset-orange-1"
+                    "text-16 w-full border-none bg-black-1 text-gray-1 focus-visible:ring-offset-0 focus:ring-orange-1"
                   )}
                 >
                   <SelectValue
@@ -131,7 +146,7 @@ const CreatePodcast = () => {
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      className="input-class focus-visible:ring-offset-orange-1"
+                      className="input-class focus-visible:ring-offset-0 focus-visible:ring-orange-1"
                       placeholder="Write a short podcast description"
                       {...field}
                     />
@@ -142,7 +157,15 @@ const CreatePodcast = () => {
             />
           </div>
           <div className="flex flex-col pt-10">
-            <GeneratePodcast />
+            <GeneratePodcast
+              setAudioStorageId={setAudioStorageId}
+              setAudio={setAudioUrl}
+              voiceType={voiceType as VoiceType}
+              audio={audioUrl}
+              voicePrompt={voicePrompt}
+              setVoicePrompt={setVoicePrompt}
+              setAudioDuration={setAudioDuration}
+            />
             <GenerateThumbnail />
             <div className="mt-10 w-full">
               <Button
